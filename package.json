@@ -4,7 +4,7 @@
   "description": "Protractor plugin for image comparison",
   "main": "index.js",
   "dependencies": {
-    "blink-diff": "1.0.7",
+    "blink-diff": "git://github.com/lukasz-si/blink-diff.git#master",
     "png-image": "1.0.0"
   },
   "devDependencies": {
