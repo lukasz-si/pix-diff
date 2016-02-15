@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "blink-diff": "git://github.com/lukasz-si/blink-diff.git#master",
-    "png-image": "1.0.0"
+    "png-image": "git://github.com/lukasz-si/png-image.git#master"
   },
   "devDependencies": {
     "grunt": "^0.4.2",
