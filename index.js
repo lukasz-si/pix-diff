@@ -33,10 +33,10 @@ function PixDiff(options) {
 
     // init
     browser.driver.manage().window().setSize(this._width, this._height)
-        .then(function() {
+        .then(function () {
             return browser.getCapabilities()
         })
-        .then(function(data) {
+        .then(function (data) {
             return this._capabilities = data.caps_;
         }.bind(this));
 }
@@ -75,10 +75,10 @@ PixDiff.prototype = {
      * @param {string} tag
      * @public
      */
-    saveScreen: function(tag) {
-        return this._flow.execute(function() {
+    saveScreen: function (tag) {
+        return this._flow.execute(function () {
             return browser.takeScreenshot()
-                .then(function(image) {
+                .then(function (image) {
                     tag = util.format('%s-%s-%sx%s.png', tag, this._capabilities.browserName, this._width, this._height);
                     return new PNGImage({
                         imagePath: new Buffer(image, 'base64'),
@@ -99,21 +99,21 @@ PixDiff.prototype = {
      * @param {string} tag
      * @public
      */
-    saveRegion: function(element, tag) {
+    saveRegion: function (element, tag) {
         var size,
             rect;
 
-        return this._flow.execute(function() {
+        return this._flow.execute(function () {
             return element.getSize()
-                .then(function(elementSize) {
+                .then(function (elementSize) {
                     size = elementSize;
                     return element.getLocation();
                 })
-                .then(function(point) {
+                .then(function (point) {
                     rect = {height: size.height, width: size.width, x: Math.floor(point.x), y: Math.floor(point.y)};
                     return browser.takeScreenshot();
                 })
-                .then(function(image) {
+                .then(function (image) {
                     tag = util.format('%s-%s-%sx%s.png', tag, this._capabilities.browserName, this._width, this._height);
                     return new PNGImage({
                         imagePath: new Buffer(image, 'base64'),
@@ -136,12 +136,12 @@ PixDiff.prototype = {
      * @return {object} result
      * @public
      */
-    checkScreen: function(tag, options) {
+    checkScreen: function (tag, options) {
         var defaults;
 
-        return this._flow.execute(function() {
+        return this._flow.execute(function () {
             return browser.takeScreenshot()
-                .then(function(image) {
+                .then(function (image) {
                     tag = util.format('%s-%s-%sx%s.png', tag, this._capabilities.browserName, this._width, this._height);
                     defaults = {
                         imageAPath: path.join(this._basePath, tag),
@@ -151,7 +151,7 @@ PixDiff.prototype = {
                     };
                     return new BlinkDiff(this._mergeDefaultOptions(defaults, options)).runWithPromise();
                 }.bind(this))
-                .then(function(result) {
+                .then(function (result) {
                     return result;
                 });
         }.bind(this));
@@ -170,22 +170,22 @@ PixDiff.prototype = {
      * @return {object}
      * @public
      */
-    checkRegion: function(element, tag, options) {
+    checkRegion: function (element, tag, options) {
         var size,
             rect,
             defaults;
 
-        return this._flow.execute(function() {
+        return this._flow.execute(function () {
             return element.getSize()
-                .then(function(elementSize) {
+                .then(function (elementSize) {
                     size = elementSize;
                     return element.getLocation();
                 })
-                .then(function(point) {
+                .then(function (point) {
                     rect = {height: size.height, width: size.width, x: Math.floor(point.x), y: Math.floor(point.y)};
                     return browser.takeScreenshot();
                 })
-                .then(function(image) {
+                .then(function (image) {
                     tag = util.format('%s-%s-%sx%s.png', tag, this._capabilities.browserName, this._width, this._height);
                     defaults = {
                         imageAPath: path.join(this._basePath, tag),
@@ -196,7 +196,7 @@ PixDiff.prototype = {
                     };
                     return new BlinkDiff(this._mergeDefaultOptions(defaults, options)).runWithPromise();
                 }.bind(this))
-                .then(function(result) {
+                .then(function (result) {
                     return result;
                 });
         }.bind(this));
@@ -204,31 +204,31 @@ PixDiff.prototype = {
 };
 
 /**
- * Jasmine PixDiff matchers
+ * Jasmine/Mocha-Chai PixDiff matchers
  */
-(function() {
+(function () {
     var v1 = {
-            toMatchScreen: function() {
+            toMatchScreen: function () {
                 var result = this.actual,
                     percent = +((result.differences / result.dimension) * 100).toFixed(2);
-                this.message = function() {
+                this.message = function () {
                     return util.format("Image is visibly different by %s pixels, %s %", result.differences, percent);
                 };
                 return ((result.code === BlinkDiff.RESULT_IDENTICAL) || (result.code === BlinkDiff.RESULT_SIMILAR));
             },
 
-            toNotMatchScreen: function() {
+            toNotMatchScreen: function () {
                 var result = this.actual;
-                this.message = function() {
+                this.message = function () {
                     return "Image is identical or near identical";
                 };
                 return ((result.code === BlinkDiff.RESULT_DIFFERENT) && (result.code !== BlinkDiff.RESULT_UNKNOWN));
             }
         },
         v2 = {
-            toMatchScreen: function() {
+            toMatchScreen: function () {
                 return {
-                    compare: function(actual, expected) {
+                    compare: function (actual, expected) {
                         var percent = +((actual.differences / actual.dimension) * 100).toFixed(2);
                         return {
                             pass: ((actual.code === BlinkDiff.RESULT_IDENTICAL) || (actual.code === BlinkDiff.RESULT_SIMILAR)),
@@ -238,9 +238,9 @@ PixDiff.prototype = {
                 }
             },
 
-            toNotMatchScreen: function() {
+            toNotMatchScreen: function () {
                 return {
-                    compare: function(actual, expected) {
+                    compare: function (actual, expected) {
                         return {
                             pass: ((actual.code === BlinkDiff.RESULT_DIFFERENT) && (actual.code !== BlinkDiff.RESULT_UNKNOWN)),
                             message: "Image is identical or near identical"
@@ -250,13 +250,31 @@ PixDiff.prototype = {
             }
         };
 
-    beforeEach(function() {
-        if (/^2/.test(jasmine.version)) {
-            jasmine.addMatchers(v2);
-        } else {
-            this.addMatchers(v1);
-        }
-    });
+    if (typeof beforeEach === "function") {
+        beforeEach(function () {
+            if (/^2/.test(jasmine.version)) {
+                jasmine.addMatchers(v2);
+            } else {
+                this.addMatchers(v1);
+            }
+        });
+    } else {
+        var chaiGlobal = require('chai');
+
+        chaiGlobal.use(function (chai, utils) {
+            var assert = chai.assert;
+
+            assert.toMatchScreen = function (actual) {
+                var percent = +((actual.differences / actual.dimension) * 100).toFixed(2);
+
+                assert(
+                    ((actual.code === BlinkDiff.RESULT_IDENTICAL) || (actual.code === BlinkDiff.RESULT_SIMILAR)),
+                    util.format("Image is visibly different by %s pixels, %s %", actual.differences, percent),
+                    "Image is identical or near identical"
+                );
+            }
+        });
+    }
 })();
 
 module.exports = PixDiff;
