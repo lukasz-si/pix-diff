@@ -2,6 +2,7 @@ var BlinkDiff = require('blink-diff'),
     PNGImage = require('png-image'),
     assert = require('assert'),
     path = require('path'),
+    fs = require('fs'),
     util = require('util');
 
 /**
@@ -65,6 +66,22 @@ PixDiff.prototype = {
         return optionsA;
     },
 
+    /**
+     * Check if image exists: if yes then comparison is run, if not then image is saved
+     * @param tag
+     * @param options
+     * @returns Promise
+     */
+    saveScreenOrCheckIfExists: function (tag, options) {
+        var imageName = util.format('%s-%s-%sx%s.png', tag, this._capabilities.browserName, this._width, this._height);
+        var imagePath = path.join(this._basePath, imageName);
+
+        if (fs.existsSync(imagePath)) {
+            return this.checkScreen(tag, options);
+        } else {
+            return this.saveScreen(tag);
+        }
+    },
     /**
      * Saves an image of the screen
      *
@@ -264,14 +281,23 @@ PixDiff.prototype = {
         chaiGlobal.use(function (chai, utils) {
             var assert = chai.assert;
 
-            assert.toMatchScreen = function (actual) {
-                var percent = +((actual.differences / actual.dimension) * 100).toFixed(2);
+            chai.Assertion.addMethod('toMatchScreen', function () {
+                var actual = utils.flag(this, 'object');
+                assertImage(actual);
+            });
 
-                assert(
-                    ((actual.code === BlinkDiff.RESULT_IDENTICAL) || (actual.code === BlinkDiff.RESULT_SIMILAR)),
-                    util.format("Image is visibly different by %s pixels, %s %", actual.differences, percent),
-                    "Image is identical or near identical"
-                );
+            assert.toMatchScreen = assertImage;
+
+            function assertImage(actual) {
+                // if "actual" is "undefined" should skip assertion because it is saveScreen() or saveRegion()
+                if (actual) {
+                    var percent = +((actual.differences / actual.dimension) * 100).toFixed(2);
+                    assert(
+                        ((actual.code === BlinkDiff.RESULT_IDENTICAL) || (actual.code === BlinkDiff.RESULT_SIMILAR)),
+                        util.format("Image is visibly different by %s pixels, %s %", actual.differences, percent),
+                        "Image is identical or near identical"
+                    );
+                }
             }
         });
     }
