@@ -5,6 +5,7 @@ var BlinkDiff = require('blink-diff'),
     assert = require('assert'),
     path = require('path'),
     fs = require('fs'),
+    util = require('util'),
     camelCase = require('camel-case');
 
 /**
