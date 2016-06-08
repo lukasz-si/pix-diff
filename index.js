@@ -5,8 +5,7 @@ var BlinkDiff = require('blink-diff'),
     assert = require('assert'),
     path = require('path'),
     fs = require('fs'),
-    util = require('util'),
-    camelCase = require('camel-case');
+    util = require('util');
 
 /**
  * Pix-diff protractor plugin class
@@ -94,7 +93,7 @@ PixDiff.prototype = {
      */
     format: function (formatString, description) {
         var formatOptions = {
-            'tag': camelCase(description),
+            'tag': description,
             'browserName': this.capabilities.browserName,
             'width': this.width,
             'height': this.height
