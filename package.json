@@ -5,8 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "blink-diff": "git://github.com/lukasz-si/blink-diff.git#master",
-    "png-image": "git://github.com/lukasz-si/png-image.git#master",
-    "camel-case": "1.2.2"
+    "png-image": "git://github.com/lukasz-si/png-image.git#master"
   },
   "devDependencies": {
     "chai": "^3.5.0",
