@@ -120,6 +120,22 @@ PixDiff.prototype = {
             return this.saveScreen(tag);
         }
     },
+    /**
+     * Check if image exists: if yes then comparison is run, if not then image is saved
+     * @param rect
+     * @param tag
+     * @param options
+     * @returns Promise
+     */
+    saveRegionOrCheckIfExists: function (rect, tag, options) {
+        var imagePath = path.join(this.basePath, this.format(this.formatString, tag));
+
+        if (fs.existsSync(imagePath)) {
+            return this.checkCroppedScreen(rect, tag, options);
+        } else {
+            return this.saveCroppedScreen(rect, tag);
+        }
+    },
 
     /**
      * Saves an image of the screen
@@ -174,6 +190,27 @@ PixDiff.prototype = {
                             rect[item] *= this.devicePixelRatio;
                         }.bind(this));
                     }
+                    return new PngImage({
+                        imagePath: new Buffer(image, 'base64'),
+                        imageOutputPath: path.join(this.basePath, this.format(this.formatString, tag)),
+                        cropImage: rect
+                    }).runWithPromise();
+                }.bind(this));
+        }.bind(this));
+    },
+
+    /**
+     * Saves an image of the cropped screen
+     *
+     * @method saveCroppedScreen
+     * @param {string} rect
+     * @param {string} tag
+     * @public
+     */
+    saveCroppedScreen: function (rect, tag) {
+        return this.flow.execute(function () {
+            return browser.takeScreenshot()
+                .then(function (image) {
                     return new PngImage({
                         imagePath: new Buffer(image, 'base64'),
                         imageOutputPath: path.join(this.basePath, this.format(this.formatString, tag)),
@@ -244,6 +281,38 @@ PixDiff.prototype = {
                     rect = {height: size.height, width: size.width, x: Math.floor(point.x), y: Math.floor(point.y)};
                     return browser.takeScreenshot();
                 })
+                .then(function (image) {
+                    tag = this.format(this.formatString, tag);
+                    defaults = {
+                        imageAPath: path.join(this.basePath, tag),
+                        imageB: new Buffer(image, 'base64'),
+                        imageOutputPath: path.join(this.basePath, 'diff', path.basename(tag)),
+                        imageOutputLimit: BlinkDiff.OUTPUT_DIFFERENT,
+                        cropImageB: rect
+                    };
+                    return new BlinkDiff(this.mergeDefaultOptions(defaults, options)).runWithPromise();
+                }.bind(this))
+                .then(function (result) {
+                    return result;
+                });
+        }.bind(this));
+    },
+
+    /**
+     * Runs the comparison against the cropped screen
+     *
+     * @method checkCroppedScreen
+     * @param {string} rect
+     * @param {string} tag
+     * @param {object} options
+     * @return {object} result
+     * @public
+     */
+    checkCroppedScreen: function (rect, tag, options) {
+        var defaults;
+
+        return this.flow.execute(function () {
+            return browser.takeScreenshot()
                 .then(function (image) {
                     tag = this.format(this.formatString, tag);
                     defaults = {
