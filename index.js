@@ -243,7 +243,8 @@ PixDiff.prototype = {
                         imageAPath: path.join(this.basePath, tag),
                         imageB: new Buffer(image, 'base64'),
                         imageOutputPath: path.join(this.basePath, 'diff', path.basename(tag)),
-                        imageOutputLimit: BlinkDiff.OUTPUT_DIFFERENT
+                        imageOutputLimit: BlinkDiff.OUTPUT_DIFFERENT,
+                        imageName: tag
                     };
                     return new BlinkDiff(this.mergeDefaultOptions(defaults, options)).runWithPromise();
                 }.bind(this))
@@ -288,7 +289,8 @@ PixDiff.prototype = {
                         imageB: new Buffer(image, 'base64'),
                         imageOutputPath: path.join(this.basePath, 'diff', path.basename(tag)),
                         imageOutputLimit: BlinkDiff.OUTPUT_DIFFERENT,
-                        cropImageB: rect
+                        cropImageB: rect,
+                        imageName: tag
                     };
                     return new BlinkDiff(this.mergeDefaultOptions(defaults, options)).runWithPromise();
                 }.bind(this))
@@ -320,7 +322,8 @@ PixDiff.prototype = {
                         imageB: new Buffer(image, 'base64'),
                         imageOutputPath: path.join(this.basePath, 'diff', path.basename(tag)),
                         imageOutputLimit: BlinkDiff.OUTPUT_DIFFERENT,
-                        cropImageB: rect
+                        cropImageB: rect,
+                        imageName: tag
                     };
                     return new BlinkDiff(this.mergeDefaultOptions(defaults, options)).runWithPromise();
                 }.bind(this))
@@ -405,7 +408,7 @@ PixDiff.prototype = {
                     var percent = +((actual.differences / actual.dimension) * 100).toFixed(2);
                     assert(
                         ((actual.code === BlinkDiff.RESULT_IDENTICAL) || (actual.code === BlinkDiff.RESULT_SIMILAR)),
-                        util.format("Image is visibly different by %s pixels, %s %", actual.differences, percent),
+                        util.format("Image is visibly different by %s pixels, %s %. Image name: %s", actual.differences, percent, actual.imageName),
                         "Image is identical or near identical"
                     );
                 }
